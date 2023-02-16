@@ -57,7 +57,7 @@ def dist(vector, cur):
     return [newx + vector.x1, newy + vector.y1]
 
 
-lookaheadD = 0.708
+lookaheadD = 0.7
 
 def lookahead_point(vector, cur):
 
@@ -165,84 +165,121 @@ cur = [1, 0]
 
 stage = 0
 
-path = [[0,0], [3,3], [5,2]]
-
-
-for i in range(len(path)-1):
-    drawVector(Vector(path[i], path[i+1]))
-    
-for i in range(100):
-
-
-    vec = Vector(path[stage], path[stage+1])
-    drawVector(vec)
-    plt.plot(cur[0], cur[1], 'ro')
-
-    #draw circle around cur
-
-    angle = np.linspace( 0 , 2 * np.pi , 150 )
-
-    x = lookaheadD * np.cos( angle )
-    y = lookaheadD * np.sin( angle )
-
-    plt.plot( x + cur[0] , y + cur[1] , color='b' )
-
-
-    closest = lookahead_point(vec, cur)
-
-    lp = 0
-    maxval = 0
-
-    curDist = Vector(cur, [0,0]).magnitude
-
-    for i in closest:
-        segDist = segmentDistance(vec, i)
-        if segDist > maxval:
-            maxval = segDist
-            lp = i
-
-    print(lp)
-    print(cur)
-
-    x = [i[0] for i in closest]
-
-    y = [i[1] for i in closest]
-
-
-    plt.scatter(x, y, color='g')
-
-    plt.axis('scaled')
-
-    speed = 0.2
-
-    segend = path[stage+1]
-
-    if(dist2Points(cur, segend) < lookaheadD):
-        stage += 1
-        if stage == len(path)-1:
-            break
-
-
-    if(lp == 0):
-        lp = [0,0]
-    dx = lp[0] - cur[0]
-    dy = lp[1] - cur[1]
-
-    cur[0] += speed * dx
-    cur[1] += speed * dy
+path = [[0.5, 0], [0,0], [3,3], [5,2], [6,5], [7,3], [8, 9], [9, 6], [3,7]]
 
 
 
 
-    plt.pause(0.00001)
+fig = plt.figure()
 
 
-    #check if Q pressed
+plt.xlim(0, 10)
 
-    
+plt.ylim(0, 10)
+
+path = []
 
 
-    #0.5, 0.5
+
+def main():
+    global stage
+    global cur
+
+    cur = [path[0][0] - 0.2, path[0][1]]
+    for i in range(len(path)-1):
+        drawVector(Vector(path[i], path[i+1]))
+        
+    while(stage < len(path)-1):
 
 
+        segend = path[stage+1]
+
+        if(dist2Points(cur, segend) < lookaheadD):
+            stage += 1
+            if stage == len(path)-1:
+                break
+
+        vec = Vector(path[stage], path[stage+1])
+        
+
+        drawVector(vec)
+        plt.plot(cur[0], cur[1], 'ro')
+
+
+
+        closest = lookahead_point(vec, cur)
+
+        lp = 0
+        maxval = 0
+
+        curDist = Vector(cur, [0,0]).magnitude
+
+        for i in closest:
+            segDist = segmentDistance(vec, i)
+            
+            if segDist > maxval:
+                maxval = segDist
+                lp = i
+
+
+        plt.axis('scaled')
+
+        speed = 0.7
+
+
+        if(lp == 0):
+            lp = [0,0]
+        dx = lp[0] - cur[0]
+        dy = lp[1] - cur[1]
+
+        cur[0] += speed * dx
+        cur[1] += speed * dy
+        
+
+
+
+
+        plt.pause(0.001)
+
+        
+
+
+        #0.5, 0.5
+    print("FINAL POINT")
+    while(cur != path[-1]):
+        plt.plot(cur[0], cur[1], 'ro')
+        plt.axis('scaled')
+        plt.pause(0.00001)
+
+        dx = path[-1][0] - cur[0]
+        dy = path[-1][1] - cur[1]
+
+        cur[0] += speed * dx
+        cur[1] += speed * dy
+
+    print("DONE")
+    plt.show()
+
+def onclick(event):
+
+    if(event.button == 1):
+        global ix, iy
+
+        ix, iy = event.xdata, event.ydata
+
+        print('x = %d, y = %d'%(ix, iy))
+
+        global path
+        path.append([ix, iy])
+
+    if(len(path) > 1 and event.button == 3):
+        fig.canvas.mpl_disconnect(cid)
+
+        main()
+
+
+
+cid = fig.canvas.mpl_connect('button_press_event', onclick)
 plt.show()
+
+
