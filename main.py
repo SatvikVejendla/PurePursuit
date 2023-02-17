@@ -179,13 +179,48 @@ plt.ylim(0, 10)
 
 path = []
 
+class Robot:
+
+    def __init__(self, pos):
+        self.angle = 0
+
+        self.pos = pos
+        self.speed = 0.3
+
+
+    def updateAngle(self, newangle):
+
+        limit = 0.8
+        if(newangle > self.angle):
+            if(newangle - self.angle > limit):
+                self.angle += limit
+
+            else:
+                self.angle = newangle
+
+        if(newangle < self.angle):
+
+            if(self.angle - newangle > limit):
+                self.angle -= limit
+
+            else:
+                self.angle = newangle
+            
+
+
+    def update(self):
+
+        self.pos[0] += self.speed * np.cos(self.angle)
+        self.pos[1] += self.speed * np.sin(self.angle)
+
 
 
 def main():
     global stage
     global cur
 
-    cur = [path[0][0] - 0.2, path[0][1]]
+    cur = [path[0][0] - 0.1, path[0][1]]
+    robot = Robot(cur)
     for i in range(len(path)-1):
         drawVector(Vector(path[i], path[i+1]))
         
@@ -194,7 +229,7 @@ def main():
 
         segend = path[stage+1]
 
-        if(dist2Points(cur, segend) < lookaheadD):
+        if(dist2Points(robot.pos, segend) < lookaheadD):
             stage += 1
             if stage == len(path)-1:
                 break
@@ -203,16 +238,16 @@ def main():
         
 
         drawVector(vec)
-        plt.plot(cur[0], cur[1], 'ro')
+        plt.plot(robot.pos[0], robot.pos[1], 'ro')
 
 
 
-        closest = lookahead_point(vec, cur)
+        closest = lookahead_point(vec, robot.pos)
 
         lp = 0
         maxval = 0
 
-        curDist = Vector(cur, [0,0]).magnitude
+        curDist = Vector(robot.pos, [0,0]).magnitude
 
         for i in closest:
             segDist = segmentDistance(vec, i)
@@ -229,11 +264,16 @@ def main():
 
         if(lp == 0):
             lp = [0,0]
-        dx = lp[0] - cur[0]
-        dy = lp[1] - cur[1]
+        dx = lp[0] - robot.pos[0]
+        dy = lp[1] - robot.pos[1]
 
-        cur[0] += speed * dx
-        cur[1] += speed * dy
+        print(robot.angle)
+
+        robot.updateAngle(math.atan2(dy, dx))
+
+        print(robot.angle)
+
+        robot.update()
         
 
 
@@ -246,16 +286,16 @@ def main():
 
         #0.5, 0.5
     print("FINAL POINT")
-    while(cur != path[-1]):
-        plt.plot(cur[0], cur[1], 'ro')
+    while(robot.pos != path[-1]):
+        plt.plot(robot.pos[0], robot.pos[1], 'ro')
         plt.axis('scaled')
         plt.pause(0.00001)
 
-        dx = path[-1][0] - cur[0]
-        dy = path[-1][1] - cur[1]
+        dx = path[-1][0] - robot.pos[0]
+        dy = path[-1][1] - robot.pos[1]
 
-        cur[0] += speed * dx
-        cur[1] += speed * dy
+        robot.pos[0] += speed * dx
+        robot.pos[1] += speed * dy
 
     print("DONE")
     plt.show()
